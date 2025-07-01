@@ -2,9 +2,11 @@ version: "3.7"
 
 services:
   uai-salgados-mcp:
-    image: https://github.com/caioalcolea/mcpsrvr.git
+    # CORRETO: Aponta para a imagem que você PRÉ-CONSTRUIU e enviou para o Docker Hub.
+    # O Swarm vai baixar esta imagem pronta para executar.
+    # Substitua 'caioalcolea' pelo seu usuário real do Docker Hub, se for diferente.
+    image: caioalcolea/uai-salgados-mcp:latest
     
-    working_dir: /app
     environment:
       - NODE_ENV=production
       - PORT=3010
@@ -16,8 +18,6 @@ services:
       - SERVICE_NAME=uai-salgados-mcp
       - DOMAIN=mcp.talkhub.me
       - CARDAPIO_ID=d38f4f7c-6223-4d6b-989f-8a62754e3d2a
-    
-    # Não precisamos mais de 'command' e 'args' aqui, pois o Dockerfile já define o CMD
 
     networks:
       - talkhub
@@ -25,6 +25,10 @@ services:
     deploy:
       mode: replicated
       replicas: 1
+      # Adicionar esta label é uma boa prática para forçar a atualização da imagem
+      # quando você atualizar a stack no Portainer.
+      labels:
+        - "com.docker.stack.image=caioalcolea/uai-salgados-mcp"
       placement:
         constraints:
           - node.role == manager
@@ -39,21 +43,23 @@ services:
         reservations:
           cpus: "0.25"
           memory: 256M
-      labels:
-        - "traefik.enable=true"
-        - "traefik.http.routers.mcp.rule=Host(`mcp.talkhub.me`)"
-        - "traefik.http.routers.mcp.entrypoints=websecure"
-        - "traefik.http.routers.mcp.tls=true"
-        - "traefik.http.routers.mcp.tls.certresolver=letsencryptresolver"
-        - "traefik.http.services.mcp.loadbalancer.server.port=3010"
-        - "traefik.http.routers.mcp.service=mcp"
-        - "traefik.http.middlewares.mcp-cors.headers.accesscontrolalloworiginlist=*"
-        - "traefik.http.middlewares.mcp-cors.headers.accesscontrolallowheaders=Content-Type,Authorization,Accept"
-        - "traefik.http.middlewares.mcp-cors.headers.accesscontrolallowmethods=GET,POST,OPTIONS"
-        - "traefik.http.routers.mcp.middlewares=mcp-cors"
+      # As labels do Traefik já estão na raiz, mas alguns preferem aqui. 
+      # Manter na raiz do serviço é mais comum e correto.
+
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.mcp.rule=Host(`mcp.talkhub.me`)"
+      - "traefik.http.routers.mcp.entrypoints=websecure"
+      - "traefik.http.routers.mcp.tls=true"
+      - "traefik.http.routers.mcp.tls.certresolver=letsencryptresolver"
+      - "traefik.http.services.mcp.loadbalancer.server.port=3010"
+      - "traefik.http.routers.mcp.service=mcp"
+      - "traefik.http.middlewares.mcp-cors.headers.accesscontrolalloworiginlist=*"
+      - "traefik.http.middlewares.mcp-cors.headers.accesscontrolallowheaders=Content-Type,Authorization,Accept"
+      - "traefik.http.middlewares.mcp-cors.headers.accesscontrolallowmethods=GET,POST,OPTIONS"
+      - "traefik.http.routers.mcp.middlewares=mcp-cors"
 
 networks:
   talkhub:
     external: true
-    # O comentário ' <-' estava quebrando a sintaxe aqui. Removi.
-    name: talkhub 
+    name: talkhub
