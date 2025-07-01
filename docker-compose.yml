@@ -2,9 +2,7 @@ version: "3.7"
 
 services:
   uai-salgados-mcp:
-    # Em vez de 'image', usamos 'build' para construir a imagem a partir do Dockerfile
-    build: .
-    # O Portainer vai construir a imagem a partir dos arquivos na pasta
+    image: https://github.com/caioalcolea/mcpsrvr.git
     
     working_dir: /app
     environment:
