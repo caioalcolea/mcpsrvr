@@ -1,0 +1,61 @@
+version: "3.7"
+
+services:
+  uai-salgados-mcp:
+    # Em vez de 'image', usamos 'build' para construir a imagem a partir do Dockerfile
+    build: .
+    # O Portainer vai construir a imagem a partir dos arquivos na pasta
+    
+    working_dir: /app
+    environment:
+      - NODE_ENV=production
+      - PORT=3010
+      - SUPABASE_URL=https://supatalk.talkhub.me
+      - SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.ewogICJyb2xlIjogImFub24iLAogICJpc3MiOiAic3VwYWJhc2UiLAogICJpYXQiOiAxNzE1MDUwODAwLAogICJleHAiOiAxODcyODE3MjAwCn0.chLQyRz8PtQQCKYNrJvOfViDq769cZ226xHPNjAoGUc
+      - SUPABASE_SERVICE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.ewogICJyb2xlIjogInNlcnZpY2Vfcm9sZSIsCiAgImlzcyI6ICJzdXBhYmFzZSIsCiAgImlhdCI6IDE3MTUwNTA4MDAsCiAgImV4cCI6IDE4NzI4MTcyMDAKfQ.5pJmD7wfG9QRa47hzobrrArpXkj2a2ofcrTXZ2gEacE
+      - MCP_AUTH_TOKEN=
+      - LOG_LEVEL=info
+      - SERVICE_NAME=uai-salgados-mcp
+      - DOMAIN=mcp.talkhub.me
+      - CARDAPIO_ID=d38f4f7c-6223-4d6b-989f-8a62754e3d2a
+    
+    # Não precisamos mais de 'command' e 'args' aqui, pois o Dockerfile já define o CMD
+
+    networks:
+      - talkhub
+
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 512M
+        reservations:
+          cpus: "0.25"
+          memory: 256M
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.mcp.rule=Host(`mcp.talkhub.me`)"
+        - "traefik.http.routers.mcp.entrypoints=websecure"
+        - "traefik.http.routers.mcp.tls=true"
+        - "traefik.http.routers.mcp.tls.certresolver=letsencryptresolver"
+        - "traefik.http.services.mcp.loadbalancer.server.port=3010"
+        - "traefik.http.routers.mcp.service=mcp"
+        - "traefik.http.middlewares.mcp-cors.headers.accesscontrolalloworiginlist=*"
+        - "traefik.http.middlewares.mcp-cors.headers.accesscontrolallowheaders=Content-Type,Authorization,Accept"
+        - "traefik.http.middlewares.mcp-cors.headers.accesscontrolallowmethods=GET,POST,OPTIONS"
+        - "traefik.http.routers.mcp.middlewares=mcp-cors"
+
+networks:
+  talkhub:
+    external: true
+    # O comentário ' <-' estava quebrando a sintaxe aqui. Removi.
+    name: talkhub 
