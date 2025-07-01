@@ -1,22 +1,21 @@
-# Use a imagem base oficial do Node.js
+# 1. Imagem Base
 FROM node:18-alpine
 
-# Crie e defina o diretório de trabalho
+# 2. Diretório de Trabalho
 WORKDIR /app
 
-# Copie o package.json para o diretório de trabalho
-# O asterisco em package*.json garante que o package-lock.json também seja copiado
+# 3. Copiar arquivos de dependências
+# O asterisco copia tanto package.json quanto package-lock.json
 COPY package*.json ./
 
-# Instale as dependências da aplicação
-# --omit=dev para não instalar dependências de desenvolvimento
+# 4. Instalar dependências de produção
 RUN npm install --omit=dev --silent
 
-# Copie o resto do código da sua aplicação
+# 5. Copiar o resto do código da aplicação
 COPY . .
 
-# Exponha a porta que a aplicação vai rodar
+# 6. Expor a porta que a aplicação usa
 EXPOSE 3010
 
-# Comando para iniciar a aplicação
+# 7. Comando padrão para iniciar o container
 CMD [ "node", "server.js" ]
