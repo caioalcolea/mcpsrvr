@@ -2,9 +2,8 @@ version: "3.7"
 
 services:
   uai-salgados-mcp:
-    # CORRETO: Aponta para a imagem que você PRÉ-CONSTRUIU e enviou para o Docker Hub.
-    # O Swarm vai baixar esta imagem pronta para executar.
-    # Substitua 'caioalcolea' pelo seu usuário real do Docker Hub, se for diferente.
+    # IMPORTANTE: Esta linha deve conter SEU_USUARIO_DOCKERHUB/NOME_DA_IMAGEM:TAG
+    # Vou usar 'caioalcolea' como exemplo. Se seu usuário no Docker Hub for outro, troque aqui.
     image: caioalcolea/uai-salgados-mcp:latest
     
     environment:
@@ -25,10 +24,6 @@ services:
     deploy:
       mode: replicated
       replicas: 1
-      # Adicionar esta label é uma boa prática para forçar a atualização da imagem
-      # quando você atualizar a stack no Portainer.
-      labels:
-        - "com.docker.stack.image=caioalcolea/uai-salgados-mcp"
       placement:
         constraints:
           - node.role == manager
@@ -43,9 +38,6 @@ services:
         reservations:
           cpus: "0.25"
           memory: 256M
-      # As labels do Traefik já estão na raiz, mas alguns preferem aqui. 
-      # Manter na raiz do serviço é mais comum e correto.
-
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.mcp.rule=Host(`mcp.talkhub.me`)"
@@ -55,9 +47,6 @@ services:
       - "traefik.http.services.mcp.loadbalancer.server.port=3010"
       - "traefik.http.routers.mcp.service=mcp"
       - "traefik.http.middlewares.mcp-cors.headers.accesscontrolalloworiginlist=*"
-      - "traefik.http.middlewares.mcp-cors.headers.accesscontrolallowheaders=Content-Type,Authorization,Accept"
-      - "traefik.http.middlewares.mcp-cors.headers.accesscontrolallowmethods=GET,POST,OPTIONS"
-      - "traefik.http.routers.mcp.middlewares=mcp-cors"
 
 networks:
   talkhub:
